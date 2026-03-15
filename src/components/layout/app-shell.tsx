@@ -29,6 +29,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
+        if (mounted && typeof window !== 'undefined') {
+            const token = localStorage.getItem('token');
+            const storedCompanyId = localStorage.getItem('companyId');
+            console.log("[DEBUG] Auth State:", { 
+                companyId, 
+                storedCompanyId, 
+                hasToken: !!token, 
+                userId: user?.id,
+                username: user?.username 
+            });
+        }
+    }, [user, companyId, mounted]);
+
+    useEffect(() => {
         if (!loading && mounted) {
             if (!user && !isAuthPage) {
                 router.replace("/login");

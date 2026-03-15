@@ -1,5 +1,10 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://moneyflowapi.runasp.net';
-export const API_BASE_URL = BASE_URL ? `${BASE_URL}/api` : '/api';
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+export const API_BASE_URL = (BASE_URL.toLowerCase().endsWith('/api') || BASE_URL.toLowerCase().includes('/api/'))
+    ? BASE_URL.replace(/\/$/, '')
+    : `/api/api`; 
+
+console.log(`[API] Base URL: ${BASE_URL || '(relative)'}`);
+console.log(`[API] API Base URL: ${API_BASE_URL}`);
 
 interface RequestOptions extends RequestInit {
     headers?: Record<string, string>;
@@ -10,7 +15,8 @@ let isRedirecting = false;
 async function fetchWithAuth(url: string, options: RequestOptions = {}) {
     const isServer = typeof window === 'undefined';
     const token = isServer ? null : localStorage.getItem('token');
-    const companyId = isServer ? null : localStorage.getItem('companyId');
+    const storedId = isServer ? null : localStorage.getItem('companyId');
+    const companyId = (storedId && storedId !== "null" && storedId !== "undefined") ? storedId : null;
 
     const headers = {
         'Content-Type': 'application/json',
@@ -19,16 +25,29 @@ async function fetchWithAuth(url: string, options: RequestOptions = {}) {
         ...options.headers,
     };
 
+    const fullUrl = `${API_BASE_URL}${url}`;
+    if (!isServer) {
+        console.log(`[API] [${options.method || 'GET'}] ${fullUrl}`, { 
+            hasToken: !!token, 
+            companyId 
+        });
+    }
+
     try {
-        const response = await fetch(`${API_BASE_URL}${url}`, {
+        const response = await fetch(fullUrl, {
             ...options,
             headers,
             credentials: 'include',
         });
 
+        if (!isServer) {
+            console.log(`[API] Response ${response.status} for ${url}`);
+        }
+
         if (response.status === 401 && !isServer) {
             // Don't intercept 401s on auth routes, let the component handle the specific active/unauthorized message
-            if (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/activate')) {
+            const lowerUrl = url.toLowerCase();
+            if (lowerUrl.includes('/auth/login') || lowerUrl.includes('/auth/register') || lowerUrl.includes('/auth/activate')) {
                 return response;
             }
 
@@ -82,11 +101,16 @@ function handleLogout() {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
+    const text = await res.text();
+    if (typeof window !== 'undefined') {
+        console.log(`[API] Raw response from ${res.url}:`, text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+    }
+
     if (!res.ok) {
         let errorMsg = res.statusText;
         let responseData: any = {};
         try {
-            responseData = await res.json();
+            responseData = JSON.parse(text);
             errorMsg = responseData.message || responseData.error || res.statusText;
         } catch { }
 
@@ -99,7 +123,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
         throw new Error(errorMsg);
     }
     if (res.status === 204 || res.status === 244) return {} as T;
-    const text = await res.text();
     return text ? JSON.parse(text) : {} as T;
 }
 

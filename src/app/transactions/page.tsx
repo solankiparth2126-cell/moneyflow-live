@@ -73,9 +73,6 @@ export default function TransactionsPage() {
     import("@/lib/api-client").then(({ ledgerApi, categoryApi }) => {
       ledgerApi.getAll().then((data) => {
         setLedgers(data);
-        if (data && data.length > 0 && data[0].id) {
-          setFilterLedger(data[0].id.toString());
-        }
       }).catch(console.error);
 
       categoryApi.getAll().then((data) => {
