@@ -93,7 +93,7 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://moneyflow.demo.com";
+            var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://moneyflow-live.vercel.app";
             var origins = frontendUrl.Split(',', StringSplitOptions.RemoveEmptyEntries);
             
             policy.WithOrigins(origins)
