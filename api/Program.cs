@@ -94,7 +94,9 @@ builder.Services.AddCors(options =>
         else
         {
             var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://moneyflow.demo.com";
-            policy.WithOrigins(frontendUrl)
+            var origins = frontendUrl.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            
+            policy.WithOrigins(origins)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
