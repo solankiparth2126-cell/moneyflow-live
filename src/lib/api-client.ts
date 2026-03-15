@@ -208,7 +208,7 @@ export const transactionApi = {
 
         const token = localStorage.getItem('token');
         const companyId = localStorage.getItem('companyId');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5039/api';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://moneyflowapi.runasp.net/api';
 
         const response = await fetch(`${baseUrl}/transactions/import`, {
             method: 'POST',
@@ -230,7 +230,7 @@ export const transactionApi = {
     generatePdf: async (id: number): Promise<Blob> => {
         const token = localStorage.getItem('token');
         const companyId = localStorage.getItem('companyId');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5039/api';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://moneyflowapi.runasp.net/api';
 
         const response = await fetch(`${baseUrl}/transactions/${id}/pdf`, {
             method: 'GET',
